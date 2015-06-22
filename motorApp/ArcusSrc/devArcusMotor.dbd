@@ -1,0 +1,5 @@
+registrar(arcusMotorRegister)
+# I've added the following line when I updated to asyn-4.22. The shell commands
+# weren't getting registered automatically. I don't know why.
+registrar(asynRegister)
+registrar(asynInterposeEosRegister)

@@ -1,0 +1,9 @@
+motorExApp/arcusMotorDriver
+
+This directory contains the example application, a simple 'c' program that calls
+an IOC shell and then sleeps. When this compiled program is called with a
+command line argument of a script file, the IOC is executed using the
+appropriate database file, libraries, etc. Compiling the code in this directory
+creates the executable and build the appropriate database file for the Arcus
+motors. The executable is placed in the bin/linux-x86_64 directory and the dbd
+file in the dbd directory.

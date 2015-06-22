@@ -1,0 +1,7 @@
+iocBoot/iocArcusMotor
+
+This directory contains the startup script for starting the IOC, and the
+motor.substitutions file, which provides for runtime configuration of certain
+motor parameters. To start the IOC from this directory type the following:
+
+../../bin/linux-x86_64/ArcusMotor st.cmd

@@ -1,0 +1,1 @@
+medm -x -macro "P=MOT:, M1=m1, M2=m2, M3=m3, M4=m4" /home/rwheat/epics/modules/motorR6-8/motorApp/op/adl/motor4x.adl &
