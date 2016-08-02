@@ -240,11 +240,19 @@ asynStatus arcusController::sendCmd(size_t *got_p, char *rep, int len,
    size_t     nwrite;
    int        eomReason;
    asynStatus status;
+   int pass = 0;
 
 	//epicsVsnprintf(buf, sizeof(buf), fmt, ap);
 
-	status = pasynOctetSyncIO->writeRead(asynUserMot_p_, cmd, cmdLen, rep,
-            len, timeout, &nwrite, got_p, &eomReason);
+   for (;;) {
+      status = pasynOctetSyncIO->writeRead(asynUserMot_p_, cmd, cmdLen, rep,
+                                    len, timeout, &nwrite, got_p, &eomReason);
+      if (status == asynSuccess) break;
+      asynPrint(asynUserMot_p_, ASYN_TRACEIO_DRIVER,
+               "sendCmd(\"%s\"), status:%d, inCount:%d, pass:%d\n",
+                                               cmd, status, (int)*got_p, pass);
+      if (++pass == 5) break;
+   }
 
 	//asynPrint(c_p_->pasynUserSelf, ASYN_TRACEIO_DRIVER, "sendCmd()=%s", buf);
 
@@ -340,13 +348,21 @@ asynStatus arcusAxis::getAxisStatus(int axis, int *val)
    size_t outCount, inCount, bufLen;
    int eomReason;
    int one, two, three, four;
+   int pass = 0;
 
    /* This command is common to all (so far) Arcus controllers??              */
    sprintf(wbuf, "%sMST", Arcus_Com_Prefix);
    outCount = strlen(wbuf);
    bufLen = 80;
-   status = pasynOctetSyncIO->writeRead(c_p_->asynUserMot_p_, wbuf, outCount,
-            rbuf, bufLen, DEFLT_TIMEOUT, &outCount, &inCount, &eomReason);
+   for (;;) {
+      status = pasynOctetSyncIO->writeRead(c_p_->asynUserMot_p_, wbuf, outCount,
+                  rbuf, bufLen, DEFLT_TIMEOUT, &outCount, &inCount, &eomReason);
+      if (status == asynSuccess) break;
+      asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+               "getAxisStatus: status:%d inCount:%d eomReason:%d\n",
+                                             status, (int)inCount, eomReason);
+      if (++pass == 5) break;
+   }
    
    if(DEBUG)
       asynPrint(c_p_->asynUserMot_p_, ASYN_TRACEIO_DRIVER,
@@ -400,6 +416,7 @@ asynStatus arcusAxis::getEncoderVal(int axis, int *val)
    size_t outCount, inCount, bufLen;
    int eomReason;
    int one, two, three, four;
+   int pass = 0;
 
    if(c_p_->ArcusModel == arcusController::PMX_4ET_SA)
       sprintf(wbuf, "PE"); /* EX for the DMX-ETH. */
@@ -407,8 +424,15 @@ asynStatus arcusAxis::getEncoderVal(int axis, int *val)
       sprintf(wbuf, "%sEX", Arcus_Com_Prefix);
    outCount = strlen(wbuf);
    bufLen = 80;
-   status = pasynOctetSyncIO->writeRead(c_p_->asynUserMot_p_, wbuf, outCount,
-            rbuf, bufLen, DEFLT_TIMEOUT, &outCount, &inCount, &eomReason);
+   for (;;) {
+      status = pasynOctetSyncIO->writeRead(c_p_->asynUserMot_p_, wbuf, outCount,
+               rbuf, bufLen, DEFLT_TIMEOUT, &outCount, &inCount, &eomReason);
+      if (status == asynSuccess) break;
+      asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+                "getEncoderVal: status:%d inCount:%d eomReason:%d\n",
+                                            status, (int)inCount, eomReason);
+      if (++pass == 5) break;
+   }
    if(DEBUG)
       asynPrint(c_p_->asynUserMot_p_, ASYN_TRACEIO_DRIVER,
          "\ngetEncoderValue: Status = %d, inCount = %lu.\n", status, inCount);
@@ -461,6 +485,7 @@ asynStatus arcusAxis::getPositionVal(int axis, int *val)
    size_t outCount, inCount, bufLen;
    int eomReason;
    int one, two, three, four;
+   int pass = 0;
 
    if(c_p_->ArcusModel == arcusController::PMX_4ET_SA)
       sprintf(wbuf, "PP");
@@ -468,8 +493,15 @@ asynStatus arcusAxis::getPositionVal(int axis, int *val)
       sprintf(wbuf, "%sPX", Arcus_Com_Prefix);
    outCount = strlen(wbuf);
    bufLen = 80;
-   status = pasynOctetSyncIO->writeRead(c_p_->asynUserMot_p_, wbuf, outCount,
-            rbuf, bufLen, DEFLT_TIMEOUT, &outCount, &inCount, &eomReason);
+   for (;;) {
+      status = pasynOctetSyncIO->writeRead(c_p_->asynUserMot_p_, wbuf, outCount,
+               rbuf, bufLen, DEFLT_TIMEOUT, &outCount, &inCount, &eomReason);
+      if (status == asynSuccess) break;
+      asynPrint(c_p_->asynUserMot_p_, ASYN_TRACEIO_DRIVER,
+               "getPositionVal: status:%d inCount:%d eomReason:%d\n",
+                                            status, (int)inCount, eomReason);
+      if (++pass == 5) break;
+   }
    /* Again, with the DMX motors, I'm getting a timeout status even though    */
    /* the data seems to be good. I'll need to figure that out, but in the mean*/
    /* time, force the status to be good.                                      */
