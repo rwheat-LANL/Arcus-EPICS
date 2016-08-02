@@ -108,6 +108,7 @@ protected:
 
 private:
 	asynUser *asynUserMot_p_;
+	asynUser *asynUserCommonMot_p_;
 friend class arcusAxis;
 };
 

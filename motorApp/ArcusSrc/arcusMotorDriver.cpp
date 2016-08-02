@@ -1,3 +1,5 @@
+/* ex: set shiftwidth=3 tabstop=3 expandtab: */
+
 /*************************************************************************\
 * Copyright (c) 2015, Los Alamos National Laboratory
 * This file is distributed subject to a Software License Agreement found
@@ -15,6 +17,7 @@
 
 #include <iocsh.h>
 
+#include <asynCommonSyncIO.h>
 #include <asynOctetSyncIO.h>
 #include <asynMotorController.h>
 #include <asynMotorAxis.h>
@@ -143,9 +146,8 @@ arcusController::arcusController(const char *portName, const char *IOPortName,
    char wbuf[80];
    size_t outCount, inCount, bufLen;
    
-	status = pasynOctetSyncIO->connect(IOPortName, 0, &asynUserMot_p_, NULL);
-	if(status)
-   {
+	if (pasynCommonSyncIO->connect(IOPortName, 0, &asynUserCommonMot_p_, NULL)
+    || pasynOctetSyncIO->connect(IOPortName, 0, &asynUserMot_p_, NULL)) {
 		asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
          "arcusController:arcusController: cannot connect to MCS controller\n");
 		THROW_(arcusException(MCSConnectionError,
@@ -252,6 +254,18 @@ asynStatus arcusController::sendCmd(size_t *got_p, char *rep, int len,
                "sendCmd(\"%s\"), status:%d, inCount:%d, pass:%d\n",
                                                cmd, status, (int)*got_p, pass);
       if (++pass == 5) break;
+      if (pass > 1) {
+         status = pasynCommonSyncIO->disconnectDevice(asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(asynUserMot_p_, ASYN_TRACE_ERROR,
+                              "Warning -- unable to disconnect from device\n");
+         }
+         status = pasynCommonSyncIO->connectDevice(asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(asynUserMot_p_, ASYN_TRACE_ERROR,
+                                 "Warning -- unable to reconnect to device\n");
+         }
+      }
    }
 
 	//asynPrint(c_p_->pasynUserSelf, ASYN_TRACEIO_DRIVER, "sendCmd()=%s", buf);
@@ -362,6 +376,18 @@ asynStatus arcusAxis::getAxisStatus(int axis, int *val)
                "getAxisStatus: status:%d inCount:%d eomReason:%d\n",
                                              status, (int)inCount, eomReason);
       if (++pass == 5) break;
+      if (pass > 1) {
+         status = pasynCommonSyncIO->disconnectDevice(c_p_->asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+                              "Warning -- unable to disconnect from device\n");
+         }
+         status = pasynCommonSyncIO->connectDevice(c_p_->asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+                                 "Warning -- unable to reconnect to device\n");
+         }
+      }
    }
    
    if(DEBUG)
@@ -429,9 +455,21 @@ asynStatus arcusAxis::getEncoderVal(int axis, int *val)
                rbuf, bufLen, DEFLT_TIMEOUT, &outCount, &inCount, &eomReason);
       if (status == asynSuccess) break;
       asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
-                "getEncoderVal: status:%d inCount:%d eomReason:%d\n",
-                                            status, (int)inCount, eomReason);
+                "getEncoderVal: status:%d inCount:%d eomReason:%d pass:%d\n",
+                                         status, (int)inCount, eomReason, pass);
       if (++pass == 5) break;
+      if (pass > 1) {
+         status = pasynCommonSyncIO->disconnectDevice(c_p_->asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+                              "Warning -- unable to disconnect from device\n");
+         }
+         status = pasynCommonSyncIO->connectDevice(c_p_->asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+                                 "Warning -- unable to reconnect to device\n");
+         }
+      }
    }
    if(DEBUG)
       asynPrint(c_p_->asynUserMot_p_, ASYN_TRACEIO_DRIVER,
@@ -501,6 +539,18 @@ asynStatus arcusAxis::getPositionVal(int axis, int *val)
                "getPositionVal: status:%d inCount:%d eomReason:%d\n",
                                             status, (int)inCount, eomReason);
       if (++pass == 5) break;
+      if (pass > 1) {
+         status = pasynCommonSyncIO->disconnectDevice(c_p_->asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+                              "Warning -- unable to disconnect from device\n");
+         }
+         status = pasynCommonSyncIO->connectDevice(c_p_->asynUserCommonMot_p_);
+         if (status != asynSuccess) {
+            asynPrint(c_p_->asynUserMot_p_, ASYN_TRACE_ERROR,
+                                 "Warning -- unable to reconnect to device\n");
+         }
+      }
    }
    /* Again, with the DMX motors, I'm getting a timeout status even though    */
    /* the data seems to be good. I'll need to figure that out, but in the mean*/
