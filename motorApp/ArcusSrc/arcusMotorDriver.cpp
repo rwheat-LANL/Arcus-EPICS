@@ -1,7 +1,7 @@
 /* ex: set shiftwidth=3 tabstop=3 expandtab: */
 
 /*************************************************************************\
-* Copyright (c) 2015, Los Alamos National Laboratory
+* Copyright (c) 2015, Triad National Security, LLC.
 * This file is distributed subject to a Software License Agreement found
 * in the file LICENSE that is included with this distribution.
 \*************************************************************************/
